@@ -1,0 +1,111 @@
+import { useState, useEffect } from 'react';
+import { Navbar } from './components/Navbar';
+import { LeadForm } from './components/LeadForm';
+import { QualificationReport } from './components/QualificationReport';
+import { LeadDashboard } from './components/LeadDashboard';
+import { StatsOverview } from './components/StatsOverview';
+import { DbArchitectureModal } from './components/DbArchitectureModal';
+import type { LeadResponse, LeadStats } from './types/lead';
+import { fetchLeadStats } from './services/api';
+
+export function App() {
+  const [activeTab, setActiveTab] = useState<'qualify' | 'dashboard'>('qualify');
+  const [currentReport, setCurrentReport] = useState<LeadResponse | null>(null);
+  const [stats, setStats] = useState<LeadStats | null>(null);
+  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
+
+  const loadStats = async () => {
+    try {
+      const data = await fetchLeadStats();
+      setStats(data);
+    } catch (err) {
+      console.error('Failed to load stats:', err);
+    }
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, [currentReport, activeTab]);
+
+  const handleQualificationSuccess = (result: LeadResponse) => {
+    setCurrentReport(result);
+    loadStats();
+  };
+
+  const handleResetForm = () => {
+    setCurrentReport(null);
+  };
+
+  const handleSelectLeadFromDashboard = (lead: LeadResponse) => {
+    setCurrentReport(lead);
+    setActiveTab('qualify');
+  };
+
+  return (
+    <div className="min-h-screen flex flex-col text-slate-100 selection:bg-blue-500 selection:text-white">
+      
+      {/* Navigation Header */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab === 'qualify' && !currentReport) {
+            // Keep state clean
+          }
+        }}
+        onOpenDbModal={() => setIsDbModalOpen(true)}
+      />
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        {/* Statistics Bar */}
+        {stats && <StatsOverview stats={stats} />}
+
+        {/* Tab 1: Qualify Lead Form / Report View */}
+        {activeTab === 'qualify' && (
+          <div>
+            {currentReport ? (
+              <QualificationReport
+                report={currentReport}
+                onReset={handleResetForm}
+              />
+            ) : (
+              <div className="max-w-3xl mx-auto">
+                <LeadForm onQualificationSuccess={handleQualificationSuccess} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 2: History Dashboard */}
+        {activeTab === 'dashboard' && (
+          <LeadDashboard onSelectLead={handleSelectLeadFromDashboard} />
+        )}
+
+      </main>
+
+      {/* Database Architecture Modal */}
+      <DbArchitectureModal
+        isOpen={isDbModalOpen}
+        onClose={() => setIsDbModalOpen(false)}
+      />
+
+      {/* Footer */}
+      <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-center text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+          <div>AI Lead Qualification Tool • Built with Java Spring Boot 3, PostgreSQL & React</div>
+          <button
+            onClick={() => setIsDbModalOpen(true)}
+            className="text-slate-400 hover:text-emerald-400 underline transition-colors"
+          >
+            View Database Architecture & SQL Snapshot
+          </button>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
+
+export default App;

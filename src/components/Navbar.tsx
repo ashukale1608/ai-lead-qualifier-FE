@@ -1,13 +1,13 @@
 import React from 'react';
-import { Sparkles, LayoutDashboard, Database, Bot, CheckCircle2 } from 'lucide-react';
+import { Sparkles, LayoutDashboard, Bot } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'qualify' | 'dashboard';
   setActiveTab: (tab: 'qualify' | 'dashboard') => void;
-  onOpenDbModal: () => void;
+  onOpenDbModal?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenDbModal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#243047] bg-[#080D1A]/90 backdrop-blur-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -55,21 +55,10 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenD
           </button>
         </nav>
 
-        {/* System & Architecture Actions */}
-        <div className="flex items-center space-x-3">
-          <button
-            onClick={onOpenDbModal}
-            className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-emerald-400 bg-[#0F172A] hover:bg-[#151F32] border border-[#243047] rounded-md transition-all cursor-pointer"
-            title="View Database Architecture Snapshot & SQL DDL"
-          >
-            <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden md:inline">System Architecture</span>
-          </button>
-          
-          <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>System Active</span>
-          </div>
+        {/* Right Status / Branding Indicator */}
+        <div className="hidden sm:flex items-center space-x-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-[11px] text-slate-400 font-medium">Live AI Engine</span>
         </div>
 
       </div>

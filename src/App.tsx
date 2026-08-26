@@ -105,16 +105,11 @@ export function App() {
         onClose={() => setIsDbModalOpen(false)}
       />
 
-      {/* Footer */}
-      <footer className="border-t border-[#243047] bg-[#080D1A] py-6 text-center text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      {/* Clean Production Footer */}
+      <footer className="border-t border-[#243047] bg-[#080D1A] py-5 text-center text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
           <div>© 2026 LeadPulse AI • Enterprise Lead Qualification & Decision Engine</div>
-          <button
-            onClick={() => setIsDbModalOpen(true)}
-            className="text-slate-400 hover:text-emerald-400 underline transition-colors cursor-pointer"
-          >
-            System Architecture & DB Specs
-          </button>
+          <div className="text-[11px] text-slate-500 font-mono">v1.2.0 Production</div>
         </div>
       </footer>
 

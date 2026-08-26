@@ -133,14 +133,25 @@ export const fetchLeadStats = async (): Promise<LeadStats> => {
 
 function extractNumericBudget(budgetString: string): number {
   if (!budgetString) return 0;
-  const cleaned = budgetString.toLowerCase()
+  const lower = budgetString.toLowerCase();
+  const isUnderPrefix = lower.includes('under') || lower.includes('<') || lower.includes('less');
+
+  const cleaned = lower
     .replace(/(\d+)\s*k\b/g, '$1000')
     .replace(/(?<=\d),(?=\d)/g, '')
     .replace(/[^0-9]/g, ' ');
+
   const numbers = cleaned.match(/\d+/g)?.map(Number) || [];
   if (numbers.length === 0) return 0;
+
   const sum = numbers.reduce((acc, num) => acc + num, 0);
-  return sum / numbers.length;
+  let avg = sum / numbers.length;
+
+  if (isUnderPrefix) {
+    avg = avg * 0.5; // "Under $5,000" -> 2500.0
+  }
+
+  return avg;
 }
 
 function generateClientSideQualification(payload: LeadRequest): LeadResponse {
@@ -148,44 +159,57 @@ function generateClientSideQualification(payload: LeadRequest): LeadResponse {
   const goal = payload.goal.toLowerCase();
   const service = payload.serviceInterest.toLowerCase();
 
-  let score = 55;
+  let score = 40;
   let qual: 'HIGH' | 'MEDIUM' | 'LOW' = 'MEDIUM';
   const insights: string[] = [];
   const missing: string[] = [];
 
+  const isEnterpriseScope = service.includes('cloud') || service.includes('ai') || 
+                            service.includes('devops') || service.includes('web') || 
+                            service.includes('security') || service.includes('cyber');
+
   if (budgetAmount >= 50000) {
-    score += 35;
-    insights.push('High enterprise budget ($50k+) indicates immediate spending authority');
-  } else if (budgetAmount >= 10000 && budgetAmount < 50000) {
+    score += 45;
+    insights.push('High enterprise budget ($50k+) indicates strong purchasing capability');
+  } else if (budgetAmount >= 25000 && budgetAmount < 50000) {
+    score += 30;
+    insights.push('Solid commercial budget ($25k - $50k) suitable for custom development');
+  } else if (budgetAmount >= 10000 && budgetAmount < 25000) {
     score += 15;
-    insights.push('Standard commercial budget range suitable for core service package');
+    insights.push('Mid-tier budget ($10k - $25k) fits standard solution implementation');
   } else if (budgetAmount >= 5000 && budgetAmount < 10000) {
     score += 5;
-    insights.push('Commercial entry-level budget ($5,000 - $10,000) suitable for starter scope');
-  } else if (budgetAmount > 0 && budgetAmount < 5000) {
-    score -= 20;
-    insights.push('Constrained budget tier relative to customary implementation costs');
-    missing.push('Flexible budget approval process and minimum viable scope');
-  } else {
-    score += 5;
+    insights.push('Entry-level budget ($5k - $10k) suitable for starter scope');
+  } else if (budgetAmount < 5000) {
+    score -= 25;
+    insights.push('Constrained budget tier (< $5k) is below customary implementation costs');
+    missing.push('Flexible budget authorization and scope reduction approvals');
   }
 
-  if (goal.length > 50) {
+  if (goal.length > 60) {
     score += 10;
-    insights.push('Well-defined business outcome and project scope');
-  } else {
+    insights.push('Well-articulated strategic goal demonstrates mature project planning');
+  } else if (goal.length < 25) {
+    score -= 10;
     missing.push('Quantifiable ROI targets and specific success metrics');
   }
 
-  if (service.includes('ai') || service.includes('cloud') || service.includes('custom') || service.includes('enterprise')) {
+  if (service.includes('ai') || service.includes('cloud') || service.includes('devops') || service.includes('custom')) {
     score += 5;
     insights.push('High strategic fit with core solution capabilities');
   }
 
-  missing.push('Internal project sponsor and target deployment timeline');
-  missing.push('Existing technology stack and infrastructure constraints');
+  missing.push('Expected project completion/launch deadline');
+  missing.push('Primary decision maker contacts and procurement workflow');
 
-  score = Math.max(20, Math.min(96, score));
+  // Hard cap for low-budget enterprise requests
+  if (isEnterpriseScope && budgetAmount < 5000) {
+    score = Math.min(38, score);
+  } else if (isEnterpriseScope && budgetAmount < 10000) {
+    score = Math.min(62, score);
+  }
+
+  score = Math.max(15, Math.min(98, score));
 
   let action = '';
   let reasoning = '';

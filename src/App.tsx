@@ -11,6 +11,7 @@ import { fetchLeadStats } from './services/api';
 export function App() {
   const [activeTab, setActiveTab] = useState<'qualify' | 'dashboard'>('qualify');
   const [currentReport, setCurrentReport] = useState<LeadResponse | null>(null);
+  const [editingLead, setEditingLead] = useState<LeadResponse | null>(null);
   const [stats, setStats] = useState<LeadStats | null>(null);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
 
@@ -29,15 +30,24 @@ export function App() {
 
   const handleQualificationSuccess = (result: LeadResponse) => {
     setCurrentReport(result);
+    setEditingLead(null);
     loadStats();
   };
 
   const handleResetForm = () => {
     setCurrentReport(null);
+    setEditingLead(null);
   };
 
   const handleSelectLeadFromDashboard = (lead: LeadResponse) => {
     setCurrentReport(lead);
+    setEditingLead(null);
+    setActiveTab('qualify');
+  };
+
+  const handleEditLeadFromDashboard = (lead: LeadResponse) => {
+    setEditingLead(lead);
+    setCurrentReport(null);
     setActiveTab('qualify');
   };
 
@@ -49,9 +59,6 @@ export function App() {
         activeTab={activeTab}
         setActiveTab={(tab) => {
           setActiveTab(tab);
-          if (tab === 'qualify' && !currentReport) {
-            // Keep state clean
-          }
         }}
         onOpenDbModal={() => setIsDbModalOpen(true)}
       />
@@ -72,7 +79,11 @@ export function App() {
               />
             ) : (
               <div className="max-w-3xl mx-auto">
-                <LeadForm onQualificationSuccess={handleQualificationSuccess} />
+                <LeadForm
+                  onQualificationSuccess={handleQualificationSuccess}
+                  initialData={editingLead}
+                  onCancelEdit={() => setEditingLead(null)}
+                />
               </div>
             )}
           </div>
@@ -80,7 +91,10 @@ export function App() {
 
         {/* Tab 2: History Dashboard */}
         {activeTab === 'dashboard' && (
-          <LeadDashboard onSelectLead={handleSelectLeadFromDashboard} />
+          <LeadDashboard
+            onSelectLead={handleSelectLeadFromDashboard}
+            onEditLead={handleEditLeadFromDashboard}
+          />
         )}
 
       </main>

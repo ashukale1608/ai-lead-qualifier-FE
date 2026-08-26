@@ -60,6 +60,41 @@ export const qualifyLead = async (payload: LeadRequest): Promise<LeadResponse> =
   return simulated;
 };
 
+export const updateAndRequalifyLead = async (id: string, payload: LeadRequest): Promise<LeadResponse> => {
+  console.info(`[LeadPulse API] PUT ${API_BASE_URL}/${id} - Re-qualifying lead for: "${payload.companyName}"`);
+  try {
+    const res = await fetch(`${API_BASE_URL}/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+
+    if (res.ok && (json.success === undefined || json.success === true)) {
+      const data = json.data !== undefined ? json.data : json;
+      console.info(`[LeadPulse API] REST API re-qualification success for "${payload.companyName}": Level=${data.qualification}, Score=${data.score}`);
+      saveLocalLead(data);
+      return data;
+    } else {
+      const errMsg = json.message || `API error (${res.status}): ${res.statusText}`;
+      console.warn(`[LeadPulse API] REST API update returned error status ${res.status}: ${errMsg}`);
+      throw new Error(errMsg);
+    }
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError') && !err.message.includes('fetch failed')) {
+      throw err;
+    }
+    console.warn('[LeadPulse API] Backend server unreachable. Executing client-side fallback AI engine for update.', err);
+  }
+
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+  const simulated = generateClientSideQualification(payload);
+  simulated.id = id;
+  saveLocalLead(simulated);
+  return simulated;
+};
+
 export const fetchAllLeads = async (searchQuery?: string): Promise<LeadResponse[]> => {
   try {
     const url = searchQuery

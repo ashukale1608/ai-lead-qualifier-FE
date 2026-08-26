@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import type { LeadRequest, LeadResponse } from '../types/lead';
-import { qualifyLead } from '../services/api';
+import { qualifyLead, updateAndRequalifyLead } from '../services/api';
 import { Sparkles, Globe, DollarSign, Target, Briefcase, Building2, Loader2, AlertCircle, X } from 'lucide-react';
 
 interface LeadFormProps {
   onQualificationSuccess: (result: LeadResponse) => void;
+  initialData?: LeadResponse | null;
+  onCancelEdit?: () => void;
 }
 
 const BUDGET_OPTIONS = [
@@ -24,13 +26,13 @@ const SERVICE_PRESETS = [
   'Cybersecurity & Audit',
 ];
 
-export const LeadForm: React.FC<LeadFormProps> = ({ onQualificationSuccess }) => {
+export const LeadForm: React.FC<LeadFormProps> = ({ onQualificationSuccess, initialData, onCancelEdit }) => {
   const [formData, setFormData] = useState<LeadRequest>({
-    companyName: '',
-    websiteUrl: '',
-    serviceInterest: SERVICE_PRESETS[0],
-    budgetRange: BUDGET_OPTIONS[2],
-    goal: '',
+    companyName: initialData?.companyName || '',
+    websiteUrl: initialData?.websiteUrl || '',
+    serviceInterest: initialData?.serviceInterest || SERVICE_PRESETS[0],
+    budgetRange: initialData?.budgetRange || BUDGET_OPTIONS[2],
+    goal: initialData?.goal || '',
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -65,13 +67,17 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onQualificationSuccess }) =>
     setIsLoading(true);
     setLoadingStep(0);
 
-    // Animate progress steps for great UX feedback
     const interval = setInterval(() => {
       setLoadingStep((prev) => (prev < loadingSteps.length - 1 ? prev + 1 : prev));
     }, 600);
 
     try {
-      const result = await qualifyLead(formData);
+      let result: LeadResponse;
+      if (initialData?.id) {
+        result = await updateAndRequalifyLead(initialData.id, formData);
+      } else {
+        result = await qualifyLead(formData);
+      }
       clearInterval(interval);
       setIsLoading(false);
       onQualificationSuccess(result);
@@ -87,15 +93,28 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onQualificationSuccess }) =>
     <div className="glass-panel p-6 sm:p-8 relative overflow-hidden">
       
       {/* Header */}
-      <div className="mb-6">
-        <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-3">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Inbound Lead Intake</span>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>{initialData ? 'Re-Qualify Existing Lead' : 'Inbound Lead Intake'}</span>
+          </div>
+          <h2 className="text-2xl font-extrabold text-slate-50 tracking-tight">
+            {initialData ? `Update & Re-Qualify ${initialData.companyName}` : 'Qualify Inbound Website Prospect'}
+          </h2>
+          <p className="text-slate-400 text-xs mt-1">
+            {initialData ? 'Modify budget range or project scope to trigger real-time AI re-evaluation.' : 'Enter company information to trigger real-time AI qualification scoring, fit reasoning, and next-best actions.'}
+          </p>
         </div>
-        <h2 className="text-2xl font-extrabold text-slate-50 tracking-tight">Qualify Inbound Website Prospect</h2>
-        <p className="text-slate-400 text-xs mt-1">
-          Enter company information to trigger real-time AI qualification scoring, fit reasoning, and next-best actions.
-        </p>
+        {onCancelEdit && (
+          <button
+            type="button"
+            onClick={onCancelEdit}
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
+          >
+            Cancel Edit
+          </button>
+        )}
       </div>
 
       {/* Popup Error Alert Banner (Stays on Form Page without Page Redirect) */}
@@ -239,7 +258,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ onQualificationSuccess }) =>
           ) : (
             <>
               <Sparkles className="w-4 h-4 text-blue-200" />
-              <span>Run AI Qualification Analysis</span>
+              <span>{initialData ? 'Re-Run AI Qualification Analysis' : 'Run AI Qualification Analysis'}</span>
             </>
           )}
         </button>

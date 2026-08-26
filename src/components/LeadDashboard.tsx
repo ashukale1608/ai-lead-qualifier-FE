@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import type { LeadResponse } from '../types/lead';
 import { fetchAllLeads } from '../services/api';
-import { Search, Filter, ExternalLink, Calendar, Award, Building2, RefreshCw, Eye, X, AlertCircle } from 'lucide-react';
+import { Search, Filter, ExternalLink, Calendar, Award, Building2, RefreshCw, Eye, Edit, X, AlertCircle } from 'lucide-react';
 
 interface LeadDashboardProps {
   onSelectLead: (lead: LeadResponse) => void;
+  onEditLead?: (lead: LeadResponse) => void;
 }
 
-export const LeadDashboard: React.FC<LeadDashboardProps> = ({ onSelectLead }) => {
+export const LeadDashboard: React.FC<LeadDashboardProps> = ({ onSelectLead, onEditLead }) => {
   const [leads, setLeads] = useState<LeadResponse[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'ALL' | 'HIGH' | 'MEDIUM' | 'LOW'>('ALL');
@@ -242,13 +243,24 @@ export const LeadDashboard: React.FC<LeadDashboardProps> = ({ onSelectLead }) =>
 
                     {/* Action */}
                     <td className="px-5 py-3 text-right">
-                      <button
-                        onClick={() => onSelectLead(lead)}
-                        className="p-1 rounded-md bg-[#0B1120] hover:bg-blue-600 text-slate-400 hover:text-white transition-all border border-[#243047] cursor-pointer"
-                        title="View Qualification Report"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center justify-end space-x-1.5" onClick={(e) => e.stopPropagation()}>
+                        {onEditLead && (
+                          <button
+                            onClick={() => onEditLead(lead)}
+                            className="p-1.5 rounded-md bg-[#0B1120] hover:bg-amber-600/30 text-slate-400 hover:text-amber-300 transition-all border border-[#243047] hover:border-amber-500/50 cursor-pointer"
+                            title="Edit / Update Budget & Re-Qualify Lead"
+                          >
+                            <Edit className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => onSelectLead(lead)}
+                          className="p-1.5 rounded-md bg-[#0B1120] hover:bg-blue-600 text-slate-400 hover:text-white transition-all border border-[#243047] cursor-pointer"
+                          title="View Qualification Report"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

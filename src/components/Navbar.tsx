@@ -63,7 +63,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab, onOpenD
             title="View Database Architecture Snapshot & SQL DDL"
           >
             <Database className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden md:inline">PostgreSQL Architecture</span>
+            <span className="hidden md:inline">MySQL 8 Architecture</span>
           </button>
           
           <div className="hidden sm:flex items-center space-x-1.5 px-2.5 py-1 text-[11px] font-semibold rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">

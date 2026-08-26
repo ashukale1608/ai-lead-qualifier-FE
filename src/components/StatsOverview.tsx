@@ -15,7 +15,7 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats }) => {
         <div>
           <div className="text-xs font-medium text-slate-400">Total Leads Analyzed</div>
           <div className="text-2xl font-black text-slate-50 mt-1 tracking-tight">{stats.totalLeads}</div>
-          <div className="text-[11px] text-slate-500 mt-1 font-mono">PostgreSQL database</div>
+          <div className="text-[11px] text-slate-500 mt-1 font-mono">MySQL 8 database</div>
         </div>
         <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
           <Users className="w-5 h-5" />

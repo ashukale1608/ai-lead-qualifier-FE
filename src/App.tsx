@@ -94,7 +94,7 @@ export function App() {
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950/60 py-6 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div>AI Lead Qualification Tool • Built with Java Spring Boot 3, PostgreSQL & React</div>
+          <div>AI Lead Qualification Tool • Built with Java Spring Boot 3, MySQL 8 & React</div>
           <button
             onClick={() => setIsDbModalOpen(true)}
             className="text-slate-400 hover:text-emerald-400 underline transition-colors"

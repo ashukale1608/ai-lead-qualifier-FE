@@ -4,7 +4,6 @@ import { LeadForm } from './components/LeadForm';
 import { QualificationReport } from './components/QualificationReport';
 import { LeadDashboard } from './components/LeadDashboard';
 import { StatsOverview } from './components/StatsOverview';
-import { DbArchitectureModal } from './components/DbArchitectureModal';
 import type { LeadResponse, LeadStats } from './types/lead';
 import { fetchLeadStats } from './services/api';
 
@@ -13,7 +12,6 @@ export function App() {
   const [currentReport, setCurrentReport] = useState<LeadResponse | null>(null);
   const [editingLead, setEditingLead] = useState<LeadResponse | null>(null);
   const [stats, setStats] = useState<LeadStats | null>(null);
-  const [isDbModalOpen, setIsDbModalOpen] = useState(false);
 
   const loadStats = async () => {
     try {
@@ -60,7 +58,6 @@ export function App() {
         setActiveTab={(tab) => {
           setActiveTab(tab);
         }}
-        onOpenDbModal={() => setIsDbModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -98,12 +95,6 @@ export function App() {
         )}
 
       </main>
-
-      {/* Database Architecture Modal */}
-      <DbArchitectureModal
-        isOpen={isDbModalOpen}
-        onClose={() => setIsDbModalOpen(false)}
-      />
 
       {/* Clean Production Footer */}
       <footer className="border-t border-[#243047] bg-[#080D1A] py-5 text-center text-xs text-slate-400">
